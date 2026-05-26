@@ -183,6 +183,33 @@ public class UserDAO {
     }
 
     /**
+     * Retrieves all active users registered with the 'admin' role, ordered by name alphabetically.
+     * 
+     * @return List of active admin Users
+     */
+    public List<User> getAllAdmins() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<User> admins = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE role = 'admin' AND is_active = 1 ORDER BY name ASC";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                admins.add(mapResultSetToUser(rs));
+            }
+            return admins;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database error listing active admins.", e);
+            return admins;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+    }
+
+    /**
      * Updates mutable profile details for an existing user.
      * Does NOT touch secure email credentials or password hashes to ensure safety.
      * 
