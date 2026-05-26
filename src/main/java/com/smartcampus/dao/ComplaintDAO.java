@@ -462,6 +462,29 @@ public class ComplaintDAO {
      * -- INSERT INTO complaint_logs (complaint_id, changed_by, old_status, new_status, remark) 
      * -- VALUES (?, ?, ?, 'assigned', ?)
      * 
+    /**
+     * Updates only the priority of a complaint.
+     */
+    public boolean updateComplaintPriority(int complaintId, String priority) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        String sql = "UPDATE complaints SET priority = ?, updated_at = NOW() WHERE id = ?";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, priority);
+            ps.setInt(2, complaintId);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database error updating priority for complaint ID: " + complaintId, e);
+            return false;
+        } finally {
+            DBConnection.close(conn, ps, null);
+        }
+    }
+
+    /**
      * Atomically executes worker assignment, deadline settings, status upgrades, and audit logs.
      */
     public boolean assignWorker(int complaintId, int workerId, Date deadline) {
