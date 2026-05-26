@@ -1,0 +1,9 @@
+target/
+*.class
+.idea/
+.project
+.classpath
+.settings/
+*.log
+*.tmp
+.gemini/
