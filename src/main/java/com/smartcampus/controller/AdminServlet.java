@@ -55,8 +55,8 @@ public class AdminServlet extends HttpServlet {
             request.setAttribute("complaints", complaints);
             request.setAttribute("workerList", workers);
             
-            LOGGER.info("Forwarding to /admin/manageComplaints.jsp");
-            request.getRequestDispatcher("/admin/manageComplaints.jsp").forward(request, response);
+            LOGGER.info("Forwarding to /WEB-INF/admin/manageComplaints.jsp");
+            request.getRequestDispatcher("/WEB-INF/admin/manageComplaints.jsp").forward(request, response);
         } else {
             LOGGER.warning("PathInfo '" + pathInfo + "' did not match any GET handler!");
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
