@@ -16,12 +16,16 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Admin dashboard stats, user listing, worker assignments, etc.
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || "/".equals(pathInfo) || "/dashboard".equals(pathInfo)) {
+            request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+            return;
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Perform administrative actions (assignments, status overrides, etc.)
+        // Perform administrative actions
     }
 }

@@ -16,12 +16,16 @@ public class WorkerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Retrieve and display assigned tasks for the logged-in worker
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || "/".equals(pathInfo) || "/dashboard".equals(pathInfo)) {
+            request.getRequestDispatcher("/worker/dashboard.jsp").forward(request, response);
+            return;
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Handle worker task status updates and remarks
+        // Handle worker task status updates
     }
 }
