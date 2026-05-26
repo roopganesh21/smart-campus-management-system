@@ -2,8 +2,12 @@ package com.smartcampus.controller;
 
 import com.smartcampus.dao.ComplaintDAO;
 import com.smartcampus.dao.UserDAO;
+import com.smartcampus.dao.FeedbackDAO;
 import com.smartcampus.model.Complaint;
 import com.smartcampus.model.User;
+import com.smartcampus.model.Feedback;
+import com.smartcampus.model.ComplaintImage;
+import com.smartcampus.model.ComplaintLog;
 import com.smartcampus.utility.FileUploadUtil;
 
 import jakarta.servlet.ServletException;
@@ -17,14 +21,19 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ComplaintServlet handles students filing complaints, including file uploads.
- * Maps to "/student/raiseComplaint" and coordinates with ComplaintDAO and FileUploadUtil.
+ * ComplaintServlet handles students filing complaints, tracking, viewing detail pages, and submitting feedback.
  */
-@WebServlet(name = "ComplaintServletWeb", urlPatterns = {"/student/raiseComplaint"})
+@WebServlet(name = "ComplaintServletWeb", urlPatterns = {
+    "/student/raiseComplaint",
+    "/student/trackComplaints",
+    "/student/complaintDetail",
+    "/student/submitFeedback"
+})
 @MultipartConfig(
     maxFileSize = 5242880,      // 5MB per file
     maxRequestSize = 26214400   // 25MB total request size (5 files * 5MB)
@@ -36,6 +45,7 @@ public class ComplaintServlet extends HttpServlet {
     
     private final ComplaintDAO complaintDAO = new ComplaintDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final FeedbackDAO feedbackDAO = new FeedbackDAO();
 
     // Valid category enums
     private static final List<String> VALID_CATEGORIES = Arrays.asList(
@@ -49,7 +59,6 @@ public class ComplaintServlet extends HttpServlet {
 
     /**
      * Handles HTTP GET requests.
-     * Guarantees session checks and forwards to raiseComplaint.jsp.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -57,18 +66,57 @@ public class ComplaintServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
-            LOGGER.warning("Access blocked: Unauthenticated student attempt to access raiseComplaint.");
+            LOGGER.warning("Access blocked: Unauthenticated student attempt.");
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        request.getRequestDispatcher("/student/raiseComplaint.jsp").forward(request, response);
+        String path = request.getServletPath();
+        if ("/student/trackComplaints".equals(path)) {
+            int studentId = (Integer) session.getAttribute("userId");
+            List<Complaint> complaints = complaintDAO.getComplaintsByStudentId(studentId);
+            request.setAttribute("complaints", complaints);
+            request.getRequestDispatcher("/student/trackComplaints.jsp").forward(request, response);
+        } else if ("/student/complaintDetail".equals(path)) {
+            String complaintIdStr = request.getParameter("id");
+            if (complaintIdStr == null || complaintIdStr.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/student/trackComplaints");
+                return;
+            }
+            try {
+                int complaintId = Integer.parseInt(complaintIdStr);
+                Optional<Complaint> complaintOpt = complaintDAO.getComplaintById(complaintId);
+                if (complaintOpt.isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/student/trackComplaints");
+                    return;
+                }
+                Complaint complaint = complaintOpt.get();
+                int sessionUserId = (Integer) session.getAttribute("userId");
+                if (complaint.getStudentId() != sessionUserId) {
+                    LOGGER.warning("Access Denied: Student " + sessionUserId + " tried to view complaint " + complaintId + " filed by " + complaint.getStudentId());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not authorized to view this complaint.");
+                    return;
+                }
+                
+                request.setAttribute("complaint", complaint);
+                request.setAttribute("images", complaintDAO.getImagesByComplaintId(complaintId));
+                request.setAttribute("logs", complaintDAO.getLogsByComplaintId(complaintId));
+                
+                Feedback feedback = feedbackDAO.getFeedbackByComplaintId(complaintId);
+                request.setAttribute("feedbackExists", feedback != null);
+                request.setAttribute("feedback", feedback);
+                
+                request.getRequestDispatcher("/student/complaintDetail.jsp").forward(request, response);
+            } catch (NumberFormatException e) {
+                response.sendRedirect(request.getContextPath() + "/student/trackComplaints");
+            }
+        } else {
+            request.getRequestDispatcher("/student/raiseComplaint.jsp").forward(request, response);
+        }
     }
 
     /**
      * Handles HTTP POST requests for complaint submission.
-     * Manages parameters validation, calls FileUploadUtil to save images, persists complaint
-     * records, logs the transition state, and redirects.
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -83,6 +131,41 @@ public class ComplaintServlet extends HttpServlet {
         }
 
         int studentId = (Integer) session.getAttribute("userId");
+        String path = request.getServletPath();
+
+        // Handle feedback submission
+        if ("/student/submitFeedback".equals(path)) {
+            String complaintIdStr = request.getParameter("complaintId");
+            String ratingStr = request.getParameter("rating");
+            String comment = request.getParameter("comment");
+
+            if (complaintIdStr == null || ratingStr == null) {
+                response.sendRedirect(request.getContextPath() + "/student/trackComplaints");
+                return;
+            }
+
+            try {
+                int complaintId = Integer.parseInt(complaintIdStr);
+                int rating = Integer.parseInt(ratingStr);
+                
+                // Security check
+                Optional<Complaint> complaintOpt = complaintDAO.getComplaintById(complaintId);
+                if (complaintOpt.isPresent() && complaintOpt.get().getStudentId() == studentId) {
+                    Feedback feedback = new Feedback();
+                    feedback.setComplaintId(complaintId);
+                    feedback.setStudentId(studentId);
+                    feedback.setRating(rating);
+                    feedback.setComment(comment == null ? "" : comment.trim());
+                    
+                    feedbackDAO.addFeedback(feedback);
+                }
+                response.sendRedirect(request.getContextPath() + "/student/complaintDetail?id=" + complaintId);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error submitting feedback", e);
+                response.sendRedirect(request.getContextPath() + "/student/trackComplaints");
+            }
+            return;
+        }
 
         // 2. Extract form parameters
         String title = trimParameter(request.getParameter("title"));
@@ -133,10 +216,10 @@ public class ComplaintServlet extends HttpServlet {
 
             // 7. DB Insertion - Save Images
             if (imagePaths != null && !imagePaths.isEmpty()) {
-                for (String path : imagePaths) {
-                    boolean imgAdded = complaintDAO.addComplaintImage(complaintId, path);
+                for (String imgPath : imagePaths) {
+                    boolean imgAdded = complaintDAO.addComplaintImage(complaintId, imgPath);
                     if (!imgAdded) {
-                        LOGGER.warning("Could not associate image path in database: " + path);
+                        LOGGER.warning("Could not associate image path in database: " + imgPath);
                     }
                 }
             }
@@ -175,8 +258,8 @@ public class ComplaintServlet extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Unexpected database error persisting complaint data.", e);
             // Clean up any written files on DB insertion failure to prevent orphan files
             if (imagePaths != null && !imagePaths.isEmpty()) {
-                for (String path : imagePaths) {
-                    FileUploadUtil.deleteFile(path, request);
+                for (String imgPath : imagePaths) {
+                    FileUploadUtil.deleteFile(imgPath, request);
                 }
             }
             forwardWithError(request, response, "An internal system error occurred. Please try again.", title, category, priority, description);
