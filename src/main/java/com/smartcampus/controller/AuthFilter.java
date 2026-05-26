@@ -43,9 +43,19 @@ public class AuthFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         
+        LOGGER.info("AuthFilter intercepted URI: " + requestURI + 
+                    ". Session exists: " + (session != null));
+        if (session != null) {
+            LOGGER.info("Session ID: " + session.getId() + 
+                        ", userId: " + session.getAttribute("userId") + 
+                        ", userRole: " + session.getAttribute("userRole"));
+        }
+        
         // 2. Validate session existence and authentication attributes
         if (session == null || session.getAttribute("userId") == null) {
-            LOGGER.warning("Unauthorized access blocked for URI: " + requestURI + ". Redirecting to login.");
+            LOGGER.warning("Unauthorized access blocked for URI: " + requestURI + 
+                           ". Redirecting to login. Reason: " + 
+                           (session == null ? "session is null" : "userId attribute is null"));
             httpResponse.sendRedirect(contextPath + "/login");
             return;
         }

@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * Coordinates user parameter extraction, comprehensive server-side validations, 
  * secure password hashing (BCrypt), and calls UserDAO to register the profile.
  */
-@WebServlet("/register")
+@WebServlet(name = "RegisterServlet", urlPatterns = "/register")
 @MultipartConfig
 public class RegisterServlet extends HttpServlet {
     

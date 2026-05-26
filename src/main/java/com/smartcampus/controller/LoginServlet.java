@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * Maps to the URL pattern "/login" and manages active HTTP user sessions.
  * On success, binds user attributes to the session and executes role-based redirects.
  */
-@WebServlet("/login")
+@WebServlet(name = "LoginServlet", urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

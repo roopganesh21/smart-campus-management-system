@@ -13,13 +13,24 @@ import java.io.IOException;
 public class WorkerServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(WorkerServlet.class.getName());
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+        String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
+        
+        LOGGER.info("WorkerServlet received GET request. URI: " + requestURI + 
+                    ", ServletPath: " + servletPath + ", PathInfo: " + pathInfo);
+        
         if (pathInfo == null || "/".equals(pathInfo) || "/dashboard".equals(pathInfo)) {
-            request.getRequestDispatcher("/worker/dashboard.jsp").forward(request, response);
+            LOGGER.info("Forwarding to /WEB-INF/worker/dashboard.jsp");
+            request.getRequestDispatcher("/WEB-INF/worker/dashboard.jsp").forward(request, response);
             return;
+        } else {
+            LOGGER.warning("PathInfo '" + pathInfo + "' did not match expected dashboard paths!");
         }
     }
 
