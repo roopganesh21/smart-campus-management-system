@@ -15,6 +15,10 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +49,31 @@ public class AdminServlet extends HttpServlet {
         LOGGER.info("AdminServlet doGet received PathInfo: " + pathInfo);
         
         if (pathInfo == null || "/".equals(pathInfo) || "/dashboard".equals(pathInfo)) {
-            LOGGER.info("Forwarding to /WEB-INF/admin/dashboard.jsp");
+            LOGGER.info("Fetching admin dashboard analytics metrics...");
+            
+            // 1. Fetch data from DAOs
+            Map<String, Integer> stats = complaintDAO.getComplaintStats();
+            Map<String, Integer> categoryCounts = complaintDAO.getComplaintsByCategory();
+            List<Map<String, Object>> monthlyTrend = complaintDAO.getMonthlyComplaintTrend(6);
+            int workerCount = userDAO.getUserCount("worker");
+            
+            List<Complaint> allComplaints = complaintDAO.getAllComplaints();
+            List<Complaint> recentComplaints = allComplaints.subList(0, Math.min(10, allComplaints.size()));
+
+            // 2. Perform manual JSON string conversion for Chart.js variables in JSP
+            String statusCountsJson = convertMapToJson(stats);
+            String categoryCountsJson = convertMapToJson(categoryCounts);
+            String monthlyTrendJson = convertTrendListToJson(monthlyTrend);
+
+            // 3. Set attributes for JSTL and JS rendering
+            request.setAttribute("stats", stats);
+            request.setAttribute("statusCountsJson", statusCountsJson);
+            request.setAttribute("categoryCountsJson", categoryCountsJson);
+            request.setAttribute("monthlyTrendJson", monthlyTrendJson);
+            request.setAttribute("workerCount", workerCount);
+            request.setAttribute("recentComplaints", recentComplaints);
+
+            LOGGER.info("Successfully bound dashboard variables. Forwarding to /WEB-INF/admin/dashboard.jsp");
             request.getRequestDispatcher("/WEB-INF/admin/dashboard.jsp").forward(request, response);
         } else if ("/manageComplaints".equals(pathInfo)) {
             LOGGER.info("Fetching complaints and workers list...");
@@ -205,5 +233,81 @@ public class AdminServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(String.format("{\"success\":%b, \"message\":\"%s\"}", success, message));
+    }
+
+    /**
+     * Converts a Java Map<String, Integer> into a standard JSON object string.
+     * 
+     * WHY: Manually building JSON via StringBuilder avoids adding heavy runtime library 
+     * dependencies like Gson or Jackson. For enterprise development, Gson/Jackson are 
+     * strongly recommended due to type safety, recursive serialization, and safety against 
+     * injection vulnerabilities.
+     */
+    private String convertMapToJson(Map<String, Integer> map) {
+        if (map == null || map.isEmpty()) {
+            return "{}";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        boolean first = true;
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            if (!first) {
+                sb.append(",");
+            }
+            sb.append("\"").append(escapeJson(entry.getKey())).append("\":").append(entry.getValue());
+            first = false;
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Converts a Java List of Map<String, Object> (monthly trends) into a JSON array string.
+     */
+    private String convertTrendListToJson(List<Map<String, Object>> list) {
+        if (list == null || list.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        boolean firstObj = true;
+        for (Map<String, Object> map : list) {
+            if (!firstObj) {
+                sb.append(",");
+            }
+            sb.append("{");
+            boolean firstKey = true;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (!firstKey) {
+                    sb.append(",");
+                }
+                sb.append("\"").append(escapeJson(entry.getKey())).append("\":");
+                Object val = entry.getValue();
+                if (val instanceof Number) {
+                    sb.append(val);
+                } else {
+                    sb.append("\"").append(escapeJson(val.toString())).append("\"");
+                }
+                firstKey = false;
+            }
+            sb.append("}");
+            firstObj = false;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    /**
+     * Escapes critical characters for standard-compliant JSON structures.
+     */
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\b", "\\b")
+                  .replace("\f", "\\f")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
     }
 }
