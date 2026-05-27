@@ -93,10 +93,11 @@ public class FeedbackDAO {
 
     /**
      * -- SQL Query:
-     * -- SELECT u.id, u.name, AVG(f.rating) as avgRating, 
-     * --        COUNT(f.id) as feedbackCount, COUNT(c.id) as resolvedCount
+     * -- SELECT u.id, u.name, COALESCE(AVG(f.rating), 0) as avgRating, 
+     * --        COUNT(f.id) as feedbackCount, COUNT(c.id) as assignedCount,
+     * --        COALESCE(SUM(CASE WHEN c.status = 'resolved' THEN 1 ELSE 0 END), 0) as resolvedCount
      * -- FROM users u 
-     * -- JOIN complaints c ON c.worker_id = u.id AND c.status='resolved'
+     * -- LEFT JOIN complaints c ON c.worker_id = u.id
      * -- LEFT JOIN feedback f ON f.complaint_id = c.id
      * -- WHERE u.role='worker'
      * -- GROUP BY u.id, u.name
@@ -110,10 +111,11 @@ public class FeedbackDAO {
         ResultSet rs = null;
         List<Map<String, Object>> list = new ArrayList<>();
         
-        String sql = "SELECT u.id, u.name, AVG(f.rating) as avgRating, " +
-                     "COUNT(f.id) as feedbackCount, COUNT(c.id) as resolvedCount " +
+        String sql = "SELECT u.id, u.name, COALESCE(AVG(f.rating), 0) as avgRating, " +
+                     "COUNT(f.id) as feedbackCount, COUNT(c.id) as assignedCount, " +
+                     "COALESCE(SUM(CASE WHEN c.status = 'resolved' THEN 1 ELSE 0 END), 0) as resolvedCount " +
                      "FROM users u " +
-                     "JOIN complaints c ON c.worker_id = u.id AND c.status='resolved' " +
+                     "LEFT JOIN complaints c ON c.worker_id = u.id " +
                      "LEFT JOIN feedback f ON f.complaint_id = c.id " +
                      "WHERE u.role='worker' " +
                      "GROUP BY u.id, u.name " +
@@ -128,6 +130,7 @@ public class FeedbackDAO {
                 map.put("workerName", rs.getString("name"));
                 map.put("avgRating", rs.getDouble("avgRating"));
                 map.put("totalFeedbacks", rs.getInt("feedbackCount"));
+                map.put("assignedCount", rs.getInt("assignedCount"));
                 map.put("resolvedCount", rs.getInt("resolvedCount"));
                 list.add(map);
             }

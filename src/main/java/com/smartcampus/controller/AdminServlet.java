@@ -85,6 +85,102 @@ public class AdminServlet extends HttpServlet {
             
             LOGGER.info("Forwarding to /WEB-INF/admin/manageComplaints.jsp");
             request.getRequestDispatcher("/WEB-INF/admin/manageComplaints.jsp").forward(request, response);
+        } else if ("/analytics".equals(pathInfo)) {
+            LOGGER.info("Fetching admin analytics dashboards...");
+            
+            // 1. Compile overall metrics into analyticsData map
+            Map<String, Object> analyticsData = new HashMap<>();
+            
+            Map<String, Integer> globalStats = complaintDAO.getComplaintStats();
+            int total = globalStats.getOrDefault("total", 0);
+            int resolved = globalStats.getOrDefault("resolved", 0);
+            
+            double resolutionRate = 0.0;
+            if (total > 0) {
+                resolutionRate = ((double) resolved / total) * 100.0;
+            }
+            
+            // For Section 1: current month metrics
+            int totalThisMonth = complaintDAO.getComplaintCountForMonth(0);
+            int resolvedThisMonth = complaintDAO.getComplaintCountByStatusForMonth("resolved", 0);
+            double resolutionRateThisMonth = 0.0;
+            if (totalThisMonth > 0) {
+                resolutionRateThisMonth = ((double) resolvedThisMonth / totalThisMonth) * 100.0;
+            }
+            
+            analyticsData.put("totalCount", total);
+            analyticsData.put("resolvedCount", resolved);
+            analyticsData.put("resolutionRate", resolutionRate);
+            analyticsData.put("totalThisMonth", totalThisMonth);
+            analyticsData.put("resolvedThisMonth", resolvedThisMonth);
+            analyticsData.put("resolutionRateThisMonth", resolutionRateThisMonth);
+            
+            // 2. Average Resolution Time per Category (Chart A)
+            Map<String, Double> avgResTime = complaintDAO.getAvgResolutionTimeByCategory();
+            // Convert maps to JSON for Chart.js variables
+            // Standard category list to keep consistent ordering
+            String[] categories = {"hostel", "classroom", "electricity", "water", "lab", "other"};
+            
+            // Convert avgResTime to category labels and double array JSON
+            StringBuilder avgResDaysSb = new StringBuilder("[");
+            for (int i = 0; i < categories.length; i++) {
+                if (i > 0) avgResDaysSb.append(",");
+                avgResDaysSb.append(avgResTime.getOrDefault(categories[i], 0.0));
+            }
+            avgResDaysSb.append("]");
+            
+            // 3. Category distributions for Current and Previous months (Chart B)
+            Map<String, Integer> currentMonthCats = complaintDAO.getCategoryCountsForMonth(0);
+            Map<String, Integer> prevMonthCats = complaintDAO.getCategoryCountsForMonth(1);
+            
+            StringBuilder currentMonthCountsSb = new StringBuilder("[");
+            StringBuilder prevMonthCountsSb = new StringBuilder("[");
+            StringBuilder labelsSb = new StringBuilder("[");
+            
+            for (int i = 0; i < categories.length; i++) {
+                if (i > 0) {
+                    currentMonthCountsSb.append(",");
+                    prevMonthCountsSb.append(",");
+                    labelsSb.append(",");
+                }
+                currentMonthCountsSb.append(currentMonthCats.getOrDefault(categories[i], 0));
+                prevMonthCountsSb.append(prevMonthCats.getOrDefault(categories[i], 0));
+                labelsSb.append("\"").append(categories[i]).append("\"");
+            }
+            currentMonthCountsSb.append("]");
+            prevMonthCountsSb.append("]");
+            labelsSb.append("]");
+            
+            // 4. Worker ratings
+            com.smartcampus.dao.FeedbackDAO feedbackDAO = new com.smartcampus.dao.FeedbackDAO();
+            List<Map<String, Object>> workerRatings = feedbackDAO.getWorkerRatings();
+            
+            for (Map<String, Object> map : workerRatings) {
+                int wAssigned = ((Number) map.getOrDefault("assignedCount", 0)).intValue();
+                int wResolved = ((Number) map.getOrDefault("resolvedCount", 0)).intValue();
+                double rate = 0.0;
+                if (wAssigned > 0) {
+                    rate = ((double) wResolved / wAssigned) * 100.0;
+                }
+                map.put("resolutionRate", rate);
+            }
+            
+            // Sort by resolutionRate DESC
+            workerRatings.sort((m1, m2) -> Double.compare(
+                ((Double) m2.get("resolutionRate")),
+                ((Double) m1.get("resolutionRate"))
+            ));
+            
+            // Set attributes
+            request.setAttribute("analyticsData", analyticsData);
+            request.setAttribute("workerRatings", workerRatings);
+            request.setAttribute("labelsJson", labelsSb.toString());
+            request.setAttribute("avgResDaysJson", avgResDaysSb.toString());
+            request.setAttribute("currentMonthCountsJson", currentMonthCountsSb.toString());
+            request.setAttribute("prevMonthCountsJson", prevMonthCountsSb.toString());
+            
+            LOGGER.info("Forwarding to /WEB-INF/admin/analytics.jsp");
+            request.getRequestDispatcher("/WEB-INF/admin/analytics.jsp").forward(request, response);
         } else {
             LOGGER.warning("PathInfo '" + pathInfo + "' did not match any GET handler!");
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

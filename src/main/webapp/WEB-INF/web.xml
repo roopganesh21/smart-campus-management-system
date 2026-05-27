@@ -106,7 +106,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>ExportServlet</servlet-name>
-        <url-pattern>/export/*</url-pattern>
+        <url-pattern>/admin/export</url-pattern>
     </servlet-mapping>
 
     <!-- Student Dashboard JSP direct mapping -->

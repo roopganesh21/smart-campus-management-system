@@ -773,4 +773,127 @@ public class ComplaintDAO {
             DBConnection.close(conn, ps, rs);
         }
     }
+
+    /**
+     * Retrieves average resolution time (in days) per category for resolved complaints.
+     */
+    public Map<String, Double> getAvgResolutionTimeByCategory() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Map<String, Double> map = new LinkedHashMap<>();
+        String sql = "SELECT category, AVG(DATEDIFF(updated_at, created_at)) as avg_days " +
+                     "FROM complaints WHERE status='resolved' GROUP BY category";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getString("category"), rs.getDouble("avg_days"));
+            }
+            return map;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database error getting avg resolution time per category.", e);
+            return map;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+    }
+
+    /**
+     * Retrieves the count of complaints per category for a specific month range:
+     * monthsAgo = 0: current month
+     * monthsAgo = 1: previous month
+     */
+    public Map<String, Integer> getCategoryCountsForMonth(int monthsAgo) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Map<String, Integer> map = new HashMap<>();
+        String sql;
+        if (monthsAgo == 0) {
+            sql = "SELECT category, COUNT(*) as count FROM complaints " +
+                  "WHERE created_at >= DATE_FORMAT(NOW(), '%Y-%m-01') " +
+                  "GROUP BY category";
+        } else {
+            sql = "SELECT category, COUNT(*) as count FROM complaints " +
+                  "WHERE created_at >= DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH) " +
+                  "AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01') " +
+                  "GROUP BY category";
+        }
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getString("category"), rs.getInt("count"));
+            }
+            return map;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database error getting category counts for month " + monthsAgo, e);
+            return map;
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+    }
+
+    /**
+     * Retrieves the count of complaints by status for a specific month range.
+     */
+    public int getComplaintCountByStatusForMonth(String status, int monthsAgo) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql;
+        if (monthsAgo == 0) {
+            sql = "SELECT COUNT(*) FROM complaints WHERE status = ? AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')";
+        } else {
+            sql = "SELECT COUNT(*) FROM complaints WHERE status = ? " +
+                  "AND created_at >= DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH) " +
+                  "AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')";
+        }
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, status);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error counting complaints by status for month " + monthsAgo, e);
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+        return 0;
+    }
+
+    /**
+     * Retrieves the total count of complaints for a specific month range.
+     */
+    public int getComplaintCountForMonth(int monthsAgo) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql;
+        if (monthsAgo == 0) {
+            sql = "SELECT COUNT(*) FROM complaints WHERE created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')";
+        } else {
+            sql = "SELECT COUNT(*) FROM complaints WHERE created_at >= DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 1 MONTH) " +
+                  "AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')";
+        }
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error counting complaints for month " + monthsAgo, e);
+        } finally {
+            DBConnection.close(conn, ps, rs);
+        }
+        return 0;
+    }
 }

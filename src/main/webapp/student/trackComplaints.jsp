@@ -11,22 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Global Style Theme Sheet -->
+    <link href="${pageContext.request.contextPath}/css/style.css" rel="stylesheet">
+    
     <!-- Custom CSS for Premium Design -->
     <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #f8fafc;
-            min-height: 100vh;
-        }
-        .navbar-brand {
-            font-weight: 700;
-            color: #4f46e5 !important;
-            letter-spacing: -0.5px;
-        }
         .card-custom {
             background-color: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+            box-shadow: var(--card-shadow);
             border: none;
             padding: 2rem;
             margin-bottom: 2rem;
@@ -99,12 +94,6 @@
             font-size: 0.95rem;
             color: #334155;
         }
-        .badge-custom {
-            font-weight: 500;
-            font-size: 0.75rem;
-            padding: 0.35rem 0.65rem;
-            border-radius: 6px;
-        }
         .empty-state {
             padding: 4rem 2rem;
             text-align: center;
@@ -113,46 +102,31 @@
             color: #cbd5e1;
             margin-bottom: 1.5rem;
         }
-        .toast-container-custom {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 1080;
-        }
-        .toast-custom {
-            background-color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #10b981;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Premium Top Navigation Bar -->
-    <jsp:include page="/WEB-INF/includes/navbar-student.jsp" />
-
-    <!-- Success Toast Container -->
-    <div class="toast-container-custom">
-        <div id="submitToast" class="toast toast-custom hide" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
-            <div class="toast-header border-0 pb-0">
-                <strong class="me-auto text-success d-flex align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-2" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                    Submission Successful
-                </strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body text-secondary pt-1 pb-3">
-                Your complaint has been submitted successfully!
-            </div>
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" style="background: rgba(15, 23, 42, 0.6); z-index: 9999;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
-    <!-- Main Content Container -->
-    <div class="container pb-5">
+    <!-- Include Toast Javascript helper -->
+    <script><%@ include file="/WEB-INF/includes/toast.js" %></script>
+
+    <div class="d-flex">
+        <!-- SIDEBAR -->
+        <jsp:include page="/WEB-INF/includes/sidebar-student.jsp" />
+        
+        <!-- MAIN CONTENT AREA -->
+        <div class="main-content flex-grow-1 p-4 fade-in">
+            <!-- Premium Top Navigation Bar -->
+            <jsp:include page="/WEB-INF/includes/navbar-student.jsp" />
+            
+            <!-- Main Content Container -->
+            <div class="container-fluid pb-5">
         
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -285,10 +259,11 @@
                     </div>
                 </c:otherwise>
             </c:choose>
+        </div> <!-- card card-custom closed -->
 
-        </div>
-
-    </div>
+    </div> <!-- container-fluid closed -->
+    </div> <!-- main-content closed -->
+    </div> <!-- d-flex closed -->
 
     <!-- Bootstrap 5.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -298,18 +273,14 @@
         (() => {
             'use strict';
 
-            // 1. Toast Notification on successful submit
+            // 1. Toast Notification on successful submit using dynamic showToast
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('submitted') === 'true') {
-                const toastEl = document.getElementById('submitToast');
-                if (toastEl) {
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                    
-                    // Clean URL query parameter cleanly without reloading
-                    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                    window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-                }
+                showToast('Your complaint has been submitted successfully!', 'success');
+                
+                // Clean URL query parameter cleanly without reloading
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
             }
 
             // 2. Count calculator for Filter Badges

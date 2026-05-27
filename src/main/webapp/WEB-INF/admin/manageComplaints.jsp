@@ -11,58 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- DataTables Bootstrap 5 CSS -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Global Style Theme Sheet -->
+    <link href="${pageContext.request.contextPath}/css/style.css" rel="stylesheet">
     
     <!-- Custom CSS for Premium Design -->
     <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #f8fafc;
-            min-height: 100vh;
-        }
-        .sidebar {
-            background-color: #0f172a;
-            color: #94a3b8;
-            min-height: 100vh;
-            border-right: 1px solid #1e293b;
-        }
-        .sidebar-brand {
-            font-weight: 700;
-            color: #ffffff !important;
-            font-size: 1.25rem;
-            letter-spacing: -0.5px;
-        }
-        .sidebar-link {
-            color: #94a3b8;
-            text-decoration: none;
-            padding: 0.75rem 1.25rem;
-            display: flex;
-            align-items: center;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            margin-bottom: 0.25rem;
-        }
-        .sidebar-link:hover {
-            color: #ffffff;
-            background-color: #1e293b;
-        }
-        .sidebar-link.active {
-            color: #ffffff;
-            background-color: #4f46e5;
-        }
-        .sidebar-link svg {
-            margin-right: 0.75rem;
-            opacity: 0.8;
-        }
-        .main-content {
-            padding: 2rem;
-        }
         .card-custom {
             background-color: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+            box-shadow: var(--card-shadow);
             border: none;
             padding: 2rem;
             margin-bottom: 2rem;
@@ -81,12 +42,6 @@
             padding: 1.2rem 1rem;
             border-bottom: 1px solid #f1f5f9;
             font-size: 0.95rem;
-        }
-        .badge-custom {
-            font-weight: 500;
-            font-size: 0.75rem;
-            padding: 0.35rem 0.65rem;
-            border-radius: 6px;
         }
         .form-select, .form-control {
             border: 1.5px solid #e2e8f0;
@@ -119,64 +74,30 @@
 </head>
 <body>
 
-    <div class="container-fluid p-0">
-        <div class="row g-0">
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" style="background: rgba(15, 23, 42, 0.6); z-index: 9999;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Include Toast Javascript helper -->
+    <script><%@ include file="/WEB-INF/includes/toast.js" %></script>
+
+    <div class="d-flex">
+        <!-- SIDEBAR -->
+        <jsp:include page="/WEB-INF/includes/sidebar-admin.jsp" />
+        
+        <!-- MAIN CONTENT AREA -->
+        <div class="main-content flex-grow-1 p-4 fade-in">
+            <!-- Premium Admin Top Navbar -->
+            <jsp:include page="/WEB-INF/includes/navbar-admin.jsp" />
             
-            <!-- SIDEBAR -->
-            <div class="col-md-3 col-lg-2 sidebar p-4 d-flex flex-column">
-                <div class="mb-4 pb-3 border-bottom border-secondary">
-                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-brand text-decoration-none">Smart Campus</a>
-                </div>
-                
-                <nav class="flex-grow-1">
-                    <a href="#" class="sidebar-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-speedometer2" viewBox="0 0 16 16">
-                            <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4M3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707M2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10m9.5 0a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5m-7-5.354A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1-1.5 1.146"/>
-                        </svg>
-                        Dashboard
-                    </a>
-                    <a href="${pageContext.request.contextPath}/admin/manageComplaints" class="sidebar-link active">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
-                            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
-                        </svg>
-                        Complaints
-                    </a>
-                    <a href="#" class="sidebar-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16">
-                            <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
-                        </svg>
-                        Bookings
-                    </a>
-                    <a href="#" class="sidebar-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-bar-chart-line" viewBox="0 0 16 16">
-                            <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h-4zm-4 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7H7zm-4 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4H3z"/>
-                        </svg>
-                        Analytics
-                    </a>
-                    <a href="#" class="sidebar-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
-                            <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.047 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724C2.345 10.63 3.32 10 5 10q.47 0 .92.08M1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
-                        </svg>
-                        Users
-                    </a>
-                </nav>
-                
-                <div class="pt-3 border-top border-secondary">
-                    <div class="text-white small fw-medium mb-3">Welcome, <strong>${userName}</strong></div>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Logout</a>
-                </div>
+            <!-- Header -->
+            <div class="mb-4">
+                <h2 class="fw-bold text-dark">Complaint Management</h2>
+                <p class="text-secondary small">Review student complaints, assign operations, and update statuses.</p>
             </div>
-            
-            <!-- MAIN CONTENT AREA -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <!-- Premium Admin Top Navbar -->
-                <jsp:include page="/WEB-INF/includes/navbar-admin.jsp" />
-                
-                <!-- Header -->
-                <div class="mb-4">
-                    <h2 class="fw-bold text-dark">Complaint Management</h2>
-                    <p class="text-secondary small">Review student complaints, assign operations, and update statuses.</p>
-                </div>
                 
                 <!-- Filter Row -->
                 <div class="card card-custom py-3 px-4 mb-4">
@@ -314,9 +235,8 @@
                     </div>
                 </div>
                 
-            </div>
-        </div>
-    </div>
+            </div> <!-- main-content closed -->
+        </div> <!-- d-flex closed -->
 
     <!-- ASSIGN/MANAGE MODAL -->
     <div class="modal fade modal-custom" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
@@ -490,6 +410,9 @@
                 remark: remark || "Updated by Admin"
             };
 
+            // Show loader overlay spinner
+            document.getElementById('loadingOverlay').classList.remove('d-none');
+
             // Call AJAX post using fetch API
             fetch('${pageContext.request.contextPath}/admin/assignWorker', {
                 method: 'POST',
@@ -501,6 +424,9 @@
             })
             .then(res => res.json())
             .then(data => {
+                // Hide loader overlay spinner
+                document.getElementById('loadingOverlay').classList.add('d-none');
+
                 if (data.success) {
                     // Update table row attributes & cells without reloading page
                     activeRow.setAttribute('data-status', newStatus);
@@ -533,13 +459,18 @@
 
                     // Close Modal
                     bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                    
+                    // Show premium success toast alert
+                    showToast('Complaint updated successfully!', 'success');
                 } else {
-                    alert('Failed to update complaint: ' + data.message);
+                    showToast('Failed to update complaint: ' + data.message, 'error');
                 }
             })
             .catch(err => {
+                // Hide loader overlay spinner
+                document.getElementById('loadingOverlay').classList.add('d-none');
                 console.error('Error executing AJAX assignment request: ', err);
-                alert('An error occurred while saving.');
+                showToast('An error occurred while saving.', 'error');
             });
         }
 
