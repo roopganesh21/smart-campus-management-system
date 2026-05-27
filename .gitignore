@@ -62,7 +62,3 @@ out/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# --- Gemini IDE Cache ignores ---
-.gemini/
-.antigravityignore
