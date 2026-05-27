@@ -276,6 +276,9 @@ public class BookingServlet extends HttpServlet {
                         bookingId
                     );
 
+                    // Send email notification asynchronously
+                    sendBookingStatusEmail(booking, "approved", remark);
+
                     sendJsonResponse(response, true, "Booking request successfully approved.");
                 } else {
                     sendJsonResponse(response, false, "Failed to update booking status in database.");
@@ -321,6 +324,9 @@ public class BookingServlet extends HttpServlet {
                         bookingId
                     );
 
+                    // Send email notification asynchronously
+                    sendBookingStatusEmail(booking, "rejected", remark);
+
                     sendJsonResponse(response, true, "Booking request successfully rejected.");
                 } else {
                     sendJsonResponse(response, false, "Failed to update booking status in database.");
@@ -340,5 +346,35 @@ public class BookingServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(String.format("{\"success\":%b, \"message\":\"%s\"}", success, message));
+    }
+
+    /**
+     * Resolves student details and schedules a premium, styled asynchronous booking status confirmation email.
+     */
+    private void sendBookingStatusEmail(Booking booking, String status, String remark) {
+        try {
+            Optional<User> studentOpt = userDAO.getUserById(booking.getStudentId());
+            if (studentOpt.isPresent()) {
+                User student = studentOpt.get();
+                
+                String startTimeStr = new java.text.SimpleDateFormat("hh:mm a").format(booking.getStartTime());
+                String endTimeStr = new java.text.SimpleDateFormat("hh:mm a").format(booking.getEndTime());
+                String timeFrame = startTimeStr + " - " + endTimeStr;
+                
+                String subject = "Booking Status Update - Reservation #" + booking.getId();
+                String htmlBody = com.smartcampus.utility.EmailUtil.buildBookingConfirmationEmail(
+                    student.getName(),
+                    booking.getResourceName(),
+                    booking.getBookingDate().toString(),
+                    timeFrame,
+                    status,
+                    remark != null && !remark.trim().isEmpty() ? remark.trim() : (status.equalsIgnoreCase("approved") ? "Approved by administrator" : "Rejected by administrator")
+                );
+                
+                com.smartcampus.utility.EmailUtil.sendEmailAsync(student.getEmail(), subject, htmlBody);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to send booking status email for booking ID: " + booking.getId(), e);
+        }
     }
 }

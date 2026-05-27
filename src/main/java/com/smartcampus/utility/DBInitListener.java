@@ -26,7 +26,10 @@ public class DBInitListener implements ServletContextListener {
      */
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        LOGGER.info("Web Application starting up. Initializing eager database connection pool...");
+        LOGGER.info("Web Application starting up. Initializing eager configurations...");
+
+        // Initialize SMTP email utility
+        EmailUtil.initialize(sce.getServletContext());
 
         // Eagerly retrieve the singleton instance. This triggers the constructor, loads
         // properties, and warms up the Apache DBCP2 connection pool.

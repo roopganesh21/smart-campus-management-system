@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+    <!-- Premium Top Navigation Bar -->
+    <jsp:include page="/WEB-INF/includes/navbar-student.jsp" />
+    
     <div class="container py-5 text-center">
         <div class="card shadow p-5 mx-auto" style="max-width: 600px;">
             <h1 class="text-primary mb-4">Student Dashboard</h1>

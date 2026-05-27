@@ -160,22 +160,8 @@
 </head>
 <body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-3 mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/student/dashboard">Smart Campus</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarText">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-                <div class="d-flex align-items-center">
-                    <span class="text-secondary small fw-medium me-4">Welcome, <strong class="text-dark">${userName}</strong></span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Premium Top Navigation Bar -->
+    <jsp:include page="/WEB-INF/includes/navbar-student.jsp" />
 
     <!-- Main Content Container -->
     <div class="container pb-5">
@@ -318,13 +304,14 @@
                                     <!-- Stars Rating -->
                                     <div class="mb-3">
                                         <label class="form-label d-block text-secondary small fw-medium">Satisfactory Rating</label>
-                                        <div class="rating-stars">
-                                            <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" title="Excellent">★</label>
-                                            <input type="radio" id="star4" name="rating" value="4"/><label for="star4" title="Good">★</label>
-                                            <input type="radio" id="star3" name="rating" value="3"/><label for="star3" title="Average">★</label>
-                                            <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="Poor">★</label>
-                                            <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="Very Poor">★</label>
+                                        <div class="rating-stars mb-2">
+                                            <input type="radio" id="star5" name="rating" value="5" required onclick="updateSelectedStarsText(5)"/><label for="star5" title="Excellent">★</label>
+                                            <input type="radio" id="star4" name="rating" value="4" onclick="updateSelectedStarsText(4)"/><label for="star4" title="Good">★</label>
+                                            <input type="radio" id="star3" name="rating" value="3" onclick="updateSelectedStarsText(3)"/><label for="star3" title="Average">★</label>
+                                            <input type="radio" id="star2" name="rating" value="2" onclick="updateSelectedStarsText(2)"/><label for="star2" title="Poor">★</label>
+                                            <input type="radio" id="star1" name="rating" value="1" onclick="updateSelectedStarsText(1)"/><label for="star1" title="Very Poor">★</label>
                                         </div>
+                                        <div class="text-secondary small fw-medium mt-1" id="selectedStarsText">You selected: 0 stars</div>
                                     </div>
 
                                     <!-- Comments -->
@@ -497,6 +484,11 @@
             if (imagesList.length === 0) return;
             currentImageIndex = (currentImageIndex + 1) % imagesList.length;
             updateLightboxImage();
+        }
+
+        function updateSelectedStarsText(val) {
+            document.getElementById('selectedStarsText').textContent = "You selected: " + val + " star" + (val > 1 ? "s" : "");
+            document.getElementById('selectedStarsText').className = "text-warning fw-bold small mt-1";
         }
     </script>
 </body>

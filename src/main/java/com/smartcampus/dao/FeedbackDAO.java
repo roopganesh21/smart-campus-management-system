@@ -7,6 +7,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,6 +80,63 @@ public class FeedbackDAO {
             return false;
         } finally {
             DBConnection.close(conn, ps, null);
+        }
+    }
+
+    /**
+     * Submits a feedback record for a resolved complaint.
+     * Delegates directly to addFeedback for backwards compatibility and code reuse.
+     */
+    public boolean submitFeedback(Feedback feedback) {
+        return addFeedback(feedback);
+    }
+
+    /**
+     * -- SQL Query:
+     * -- SELECT u.id, u.name, AVG(f.rating) as avgRating, 
+     * --        COUNT(f.id) as feedbackCount, COUNT(c.id) as resolvedCount
+     * -- FROM users u 
+     * -- JOIN complaints c ON c.worker_id = u.id AND c.status='resolved'
+     * -- LEFT JOIN feedback f ON f.complaint_id = c.id
+     * -- WHERE u.role='worker'
+     * -- GROUP BY u.id, u.name
+     * -- ORDER BY avgRating DESC
+     * 
+     * Compiles ratings and feedback analytics averages per worker for dashboard metrics.
+     */
+    public List<Map<String, Object>> getWorkerRatings() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        String sql = "SELECT u.id, u.name, AVG(f.rating) as avgRating, " +
+                     "COUNT(f.id) as feedbackCount, COUNT(c.id) as resolvedCount " +
+                     "FROM users u " +
+                     "JOIN complaints c ON c.worker_id = u.id AND c.status='resolved' " +
+                     "LEFT JOIN feedback f ON f.complaint_id = c.id " +
+                     "WHERE u.role='worker' " +
+                     "GROUP BY u.id, u.name " +
+                     "ORDER BY avgRating DESC";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("workerId", rs.getInt("id"));
+                map.put("workerName", rs.getString("name"));
+                map.put("avgRating", rs.getDouble("avgRating"));
+                map.put("totalFeedbacks", rs.getInt("feedbackCount"));
+                map.put("resolvedCount", rs.getInt("resolvedCount"));
+                list.add(map);
+            }
+            return list;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database error compiling worker rating metrics.", e);
+            return list;
+        } finally {
+            DBConnection.close(conn, ps, rs);
         }
     }
 }

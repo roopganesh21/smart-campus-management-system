@@ -426,6 +426,10 @@ public class ComplaintDAO {
             // Commit atomic transaction
             conn.commit();
             LOGGER.info("Successfully updated status to " + newStatus + " for complaint: " + complaintId);
+            
+            // Trigger asynchronous email alert to student
+            triggerComplaintStatusEmail(complaintId, newStatus, remark);
+            
             return true;
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error updating complaint status. Rolling back transaction.", e);
@@ -540,6 +544,10 @@ public class ComplaintDAO {
 
             conn.commit();
             LOGGER.info("Successfully assigned worker " + workerId + " to complaint " + complaintId);
+            
+            // Trigger asynchronous email alert to student
+            triggerComplaintStatusEmail(complaintId, "assigned", "A campus service worker has been assigned to address your complaint.");
+            
             return true;
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error assigning worker. Rolling back transaction.", e);
@@ -725,6 +733,44 @@ public class ComplaintDAO {
             ps.setNull(paramIndex, java.sql.Types.DATE);
         } else {
             ps.setDate(paramIndex, date);
+        }
+    }
+
+    /**
+     * Localized helper method to resolve the student's email, name, and complaint title, 
+     * then trigger a beautifully formatted asynchronous SMTP status update email.
+     */
+    private void triggerComplaintStatusEmail(int complaintId, String newStatus, String remark) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "SELECT u.email, u.name AS student_name, c.title, w.name AS worker_name " +
+                     "FROM complaints c " +
+                     "JOIN users u ON c.student_id = u.id " +
+                     "LEFT JOIN users w ON c.worker_id = w.id " +
+                     "WHERE c.id = ?";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, complaintId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                String toEmail = rs.getString("email");
+                String studentName = rs.getString("student_name");
+                String title = rs.getString("title");
+                String workerName = rs.getString("worker_name");
+                
+                String subject = "Complaint Status Update - Ticket #" + complaintId;
+                String htmlBody = com.smartcampus.utility.EmailUtil.buildStatusUpdateEmail(
+                    studentName, title, newStatus, workerName, remark
+                );
+                
+                com.smartcampus.utility.EmailUtil.sendEmailAsync(toEmail, subject, htmlBody);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to resolve and trigger status update email for complaint " + complaintId, e);
+        } finally {
+            DBConnection.close(conn, ps, rs);
         }
     }
 }

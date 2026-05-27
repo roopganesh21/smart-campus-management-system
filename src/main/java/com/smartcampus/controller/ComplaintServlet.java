@@ -31,8 +31,7 @@ import java.util.logging.Logger;
 @WebServlet(name = "ComplaintServletWeb", urlPatterns = {
     "/student/raiseComplaint",
     "/student/trackComplaints",
-    "/student/complaintDetail",
-    "/student/submitFeedback"
+    "/student/complaintDetail"
 })
 @MultipartConfig(
     maxFileSize = 5242880,      // 5MB per file

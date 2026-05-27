@@ -86,7 +86,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>NotificationServlet</servlet-name>
-        <url-pattern>/notifications/*</url-pattern>
+        <url-pattern>/notifications</url-pattern>
     </servlet-mapping>
 
     <!-- FeedbackServlet -->
@@ -96,7 +96,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>FeedbackServlet</servlet-name>
-        <url-pattern>/feedback/*</url-pattern>
+        <url-pattern>/student/submitFeedback</url-pattern>
     </servlet-mapping>
 
     <!-- ExportServlet -->

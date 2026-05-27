@@ -168,6 +168,8 @@
             
             <!-- MAIN CONTENT AREA -->
             <div class="col-md-9 col-lg-10 main-content">
+                <!-- Premium Admin Top Navbar -->
+                <jsp:include page="/WEB-INF/includes/navbar-admin.jsp" />
                 
                 <!-- Page Header -->
                 <div class="mb-4">

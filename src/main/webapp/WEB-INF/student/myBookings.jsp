@@ -71,35 +71,8 @@
 </head>
 <body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-3 mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/student/dashboard">Smart Campus</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarText">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-4">
-                    <li class="nav-item me-3">
-                        <a class="nav-link nav-link-custom" href="${pageContext.request.contextPath}/student/raiseComplaint">Raise Complaint</a>
-                    </li>
-                    <li class="nav-item me-3">
-                        <a class="nav-link nav-link-custom" href="${pageContext.request.contextPath}/student/trackComplaints">My Complaints</a>
-                    </li>
-                    <li class="nav-item me-3">
-                        <a class="nav-link nav-link-custom" href="${pageContext.request.contextPath}/student/bookResource">Book Resource</a>
-                    </li>
-                    <li class="nav-item me-3">
-                        <a class="nav-link nav-link-custom active" href="${pageContext.request.contextPath}/student/myBookings">My Bookings</a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <span class="text-secondary small fw-medium me-4">Welcome, <strong class="text-dark">${userName}</strong></span>
-                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Premium Top Navigation Bar -->
+    <jsp:include page="/WEB-INF/includes/navbar-student.jsp" />
 
     <!-- Success Toast Notification (double-submit prevention feedback) -->
     <div class="toast-container">

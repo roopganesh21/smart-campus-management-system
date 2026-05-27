@@ -139,6 +139,8 @@
             
             <!-- MAIN CONTENT AREA -->
             <div class="col-md-9 col-lg-10 main-content">
+                <!-- Premium Worker Top Navbar -->
+                <jsp:include page="/WEB-INF/includes/navbar-worker.jsp" />
                 
                 <!-- Page Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
