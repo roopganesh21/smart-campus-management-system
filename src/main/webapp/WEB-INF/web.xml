@@ -99,15 +99,7 @@
         <url-pattern>/student/submitFeedback</url-pattern>
     </servlet-mapping>
 
-    <!-- ExportServlet -->
-    <servlet>
-        <servlet-name>ExportServlet</servlet-name>
-        <servlet-class>com.smartcampus.controller.ExportServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ExportServlet</servlet-name>
-        <url-pattern>/admin/export</url-pattern>
-    </servlet-mapping>
+
 
     <!-- Student Dashboard JSP direct mapping -->
     <servlet>
