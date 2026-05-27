@@ -268,7 +268,7 @@
             // 1. Live Character Counter for Description Textarea
             description.addEventListener('input', () => {
                 const count = description.value.length;
-                charCounter.textContent = `${count}/500 characters`;
+                charCounter.textContent = count + '/500 characters';
                 if (count >= 500) {
                     charCounter.classList.add('text-danger');
                 } else {
@@ -278,7 +278,7 @@
 
             // Trigger once on load in case of form preservation
             const countOnLoad = description.value.length;
-            charCounter.textContent = `${countOnLoad}/500 characters`;
+            charCounter.textContent = countOnLoad + '/500 characters';
 
             // 2. Track files in data transfer object to support dynamic removals
             let dt = new DataTransfer();
@@ -298,13 +298,13 @@
                     
                     // Validate file type
                     if (!file.type.startsWith('image/')) {
-                        alert(`File "${file.name}" is not an image and will be skipped.`);
+                        alert('File "' + file.name + '" is not an image and will be skipped.');
                         continue;
                     }
 
                     // Validate file size (5MB limit)
                     if (file.size > 5 * 1024 * 1024) {
-                        alert(`File "${file.name}" exceeds the 5MB limit and will be skipped.`);
+                        alert('File "' + file.name + '" exceeds the 5MB limit and will be skipped.');
                         continue;
                     }
 

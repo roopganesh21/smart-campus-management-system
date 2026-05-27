@@ -346,7 +346,7 @@
         function formatTimeStr(hour, min) {
             const hh = hour.toString().padStart(2, '0');
             const mm = min.toString().padStart(2, '0');
-            return `${hh}:${mm}:00`;
+            return hh + ":" + mm + ":00";
         }
 
         function formatDisplayStr(hour, min) {
@@ -354,7 +354,7 @@
             let h = hour % 12;
             if (h === 0) h = 12;
             const mm = min.toString().padStart(2, '0');
-            return `${h}:${mm} ${period}`;
+            return h + ":" + mm + " " + period;
         }
 
         function openBookingModal(resourceId, resourceName) {
@@ -391,7 +391,7 @@
                 return;
             }
 
-            const url = `${pageContext.request.contextPath}/student/checkAvailability?resourceId=${resId}&date=${date}&start=${start}&end=${end}`;
+            const url = '${pageContext.request.contextPath}/student/checkAvailability?resourceId=' + resId + '&date=' + date + '&start=' + start + '&end=' + end;
 
             fetch(url)
             .then(res => res.json())

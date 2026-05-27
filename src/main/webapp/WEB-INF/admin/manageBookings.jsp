@@ -341,14 +341,14 @@
         function approveBooking(id) {
             if (!confirm("Are you sure you want to APPROVE this booking request?")) return;
             
-            activeRow = document.getElementById(`row-${id}`);
+            activeRow = document.getElementById('row-' + id);
 
             fetch(`${pageContext.request.contextPath}/admin/approveBooking`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `bookingId=${id}&adminRemark=Approved by administrator`
+                body: 'bookingId=' + id + '&adminRemark=Approved by administrator'
             })
             .then(res => res.json())
             .then(data => {
@@ -377,13 +377,13 @@
         }
 
         function openRejectModal(id) {
-            activeRow = document.getElementById(`row-${id}`);
+            activeRow = document.getElementById('row-' + id);
             
             const student = activeRow.getAttribute('data-student');
             const resource = activeRow.getAttribute('data-resource');
 
             document.getElementById('rejectBookingId').value = id;
-            document.getElementById('rejectModalTitle').textContent = `Booking #${id} - ${resource}`;
+            document.getElementById('rejectModalTitle').textContent = 'Booking #' + id + ' - ' + resource;
             document.getElementById('rejectModalStudent').textContent = student;
             document.getElementById('rejectRemark').value = '';
 
@@ -400,7 +400,7 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `bookingId=${id}&adminRemark=${encodeURIComponent(remark)}`
+                body: 'bookingId=' + id + '&adminRemark=' + encodeURIComponent(remark)
             })
             .then(res => res.json())
             .then(data => {

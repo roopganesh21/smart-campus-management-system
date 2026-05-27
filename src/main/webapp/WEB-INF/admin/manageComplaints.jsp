@@ -369,7 +369,7 @@
         });
 
         function openAssignModal(id) {
-            activeRow = document.getElementById(`row-${id}`);
+            activeRow = document.getElementById('row-' + id);
             
             const title = activeRow.getAttribute('data-title');
             const status = activeRow.getAttribute('data-status');
