@@ -70,7 +70,13 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>BookingServlet</servlet-name>
-        <url-pattern>/bookings/*</url-pattern>
+        <url-pattern>/student/bookResource</url-pattern>
+        <url-pattern>/student/myBookings</url-pattern>
+        <url-pattern>/student/checkAvailability</url-pattern>
+        <url-pattern>/student/book</url-pattern>
+        <url-pattern>/admin/manageBookings</url-pattern>
+        <url-pattern>/admin/approveBooking</url-pattern>
+        <url-pattern>/admin/rejectBooking</url-pattern>
     </servlet-mapping>
 
     <!-- NotificationServlet -->
