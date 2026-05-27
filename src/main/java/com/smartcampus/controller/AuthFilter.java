@@ -80,13 +80,14 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // 4. Pass request down the chain
-        chain.doFilter(request, response);
-
-        // 5. Post-chain: Set cache-control headers on response to prevent back-button access
+        // 4. Set security and cache-control headers (pre-chain to ensure they are sent even if committed downstream)
         httpResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
         httpResponse.setHeader("Pragma", "no-cache"); // HTTP 1.0
         httpResponse.setDateHeader("Expires", 0); // Proxies
+        httpResponse.setHeader("X-Frame-Options", "DENY"); // Clickjacking protection
+
+        // 5. Pass request down the chain
+        chain.doFilter(request, response);
     }
 
     @Override

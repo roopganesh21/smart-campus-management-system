@@ -1,0 +1,15 @@
+# Smart Campus Email Engine Properties
+# Copy this template file as 'mail.properties' and fill in your details.
+# IMPORTANT: Never commit mail.properties to source control.
+
+mail.smtp.host=smtp.gmail.com
+mail.smtp.port=587
+mail.smtp.auth=true
+mail.smtp.starttls.enable=true
+
+# Sender account details
+mail.from.address=YOUR_SENDER_EMAIL@gmail.com
+mail.from.name=Smart Campus Portal
+# WARNING: Do NOT place your primary account password here. 
+# Go to Google Account > Security > 2-Step Verification > App Passwords, generate an app password, and paste it below.
+mail.from.password=YOUR_GMAIL_APP_PASSWORD_HERE

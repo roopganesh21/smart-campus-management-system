@@ -1,9 +1,68 @@
+# IMPORTANT: db.properties and mail.properties contain credentials.
+# Copy db.properties.template and mail.properties.template 
+# and fill in your values. Never commit the real files.
+
+# --- Maven ignores ---
 target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.next
+pom.xml.release
+pom.xml.backup
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# --- Compiled classes ---
 *.class
-.idea/
-.project
-.classpath
-.settings/
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# --- Runtime Uploads & Logs ---
+src/main/webapp/uploads/
+uploads/
 *.log
-*.tmp
+temp/
+tmp/
+
+# --- Sensitive Config files containing logins/tokens ---
+src/main/webapp/WEB-INF/db.properties
+src/main/webapp/WEB-INF/mail.properties
+
+# --- IntelliJ IDEA ignores ---
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# --- VS Code ignores ---
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+# Keep extensions.json to recommend plugins: !.vscode/extensions.json
+
+# --- Eclipse ignores ---
+.metadata/
+.classpath
+.project
+.settings/
+.factorypath
+
+# --- OS-specific ignores ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --- Gemini IDE Cache ignores ---
 .gemini/
+.antigravityignore

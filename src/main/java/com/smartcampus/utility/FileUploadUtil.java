@@ -184,7 +184,19 @@ public class FileUploadUtil {
                 File targetFile = new File(uploadDirFile, uniqueFilename);
                 item.write(targetFile);
 
-                // E. Resolve relative path for database registry
+                // E. Perform secondary MIME check to prevent file spoofing (MIME validation)
+                try {
+                    String contentType = java.nio.file.Files.probeContentType(targetFile.toPath());
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        LOGGER.warning("Upload rejected: Spoofed MIME type detected for: " + originalFilename + " (MIME resolved: " + contentType + ")");
+                        targetFile.delete(); // Immediately purge invalid file
+                        throw new IllegalArgumentException("Only valid image files are allowed. Spoofed file type detected.");
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to resolve MIME type for file: " + originalFilename + ". Proceeding with caution.", e);
+                }
+
+                // F. Resolve relative path for database registry
                 String relativePath = "uploads/" + uploadDirName + "/" + uniqueFilename;
                 savedPaths.add(relativePath);
 
